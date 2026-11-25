@@ -226,9 +226,6 @@ pre.out{white-space:pre-wrap;background:#fafbfc;border:1px solid var(--line);bor
     <div id="times"></div>
     <label class="f">空いた時間で取り組みたいこと<span class="opt">いくつでも</span></label>
     <div class="chips" id="goals"></div>
-    <label class="f">使いたい専用機器<span class="opt">あれば</span></label>
-    <div class="chips" id="devices"></div>
-    <p class="note small">パソコン・タブレット・スマホは補助の対象外です。</p>
   </div>
 
   <div class="card">
@@ -376,10 +373,9 @@ const REQS = [
   "直近の決算書（確定申告書）と納税証明書を用意できる"
 ];
 const GOALS = ["営業・新規開拓に力を入れる","新しい商品・サービスをつくる","残業を減らす・休みを取りやすくする","賃上げ・採用に回す","ミスを減らし品質を上げる"];
-const DEVICES = ["スマートレジ","QR・バーコード読取機","ICカード打刻機","車両のOBD診断機"];
 
 // ===== 状態 =====
-const st = {industry:null, emp:null, picked:new Set(), chosen:new Set(), entity:"法人", gbiz:null, goals:new Set(), devices:new Set(), agreedAt:null, mode:null};
+const st = {industry:null, emp:null, picked:new Set(), chosen:new Set(), entity:"法人", gbiz:null, goals:new Set(), agreedAt:null, mode:null};
 const $ = id => document.getElementById(id);
 const LABELS = ["業種","お困りごと","おすすめ","お申込み","送信","完了"];
 
@@ -523,12 +519,14 @@ function renderApply(){
   chips($('entity'), ["法人","個人事業主"], v=>{st.entity=v; $('corpNoWrap').classList.toggle('hide', v!=="法人");}, false, v=>st.entity===v);
   chips($('gbiz'), ["取得済み","申請中","未取得"], v=>{st.gbiz=v;}, false, v=>st.gbiz===v);
   chips($('goals'), GOALS, v=>{st.goals.has(v)?st.goals.delete(v):st.goals.add(v);}, true, v=>st.goals.has(v));
-  chips($('devices'), DEVICES, v=>{st.devices.has(v)?st.devices.delete(v):st.devices.add(v);}, true, v=>st.devices.has(v));
   if (!$('reqs').children.length) $('reqs').innerHTML = REQS.map((q,i)=>`<label class="chk"><input type="checkbox" id="req${i}"><span>${q}</span></label>`).join('');
   const prev = {}; document.querySelectorAll('#times input').forEach(x=>prev[x.dataset.id]=x.value);
   $('times').innerHTML = [...st.picked].map(id=>{ const it = ISSUES.find(i=>i.id===id);
-    return `<div class="timerow"><div>${it.t}</div><input type="number" inputmode="numeric" placeholder="時間/月" data-id="${id}" value="${prev[id]||''}"></div>`; }).join('');
+    return `<div class="timerow"><div>${it.t}</div><input type="number" inputmode="numeric" min="0" placeholder="時間/月" data-id="${id}" value="${prev[id]||''}"></div>`; }).join('');
 }
+// 作業時間はマイナスにしない（▼ボタンは min="0" で止まる。手で「-」を打っても0に戻す）
+$('times').addEventListener('keydown', e=>{ if (['-','+','e','E'].includes(e.key)) e.preventDefault(); });
+$('times').addEventListener('input', e=>{ const x = e.target; if (x.value!=='' && Number(x.value) < 0) x.value = '0'; });
 $('agree').onchange = e=>{
   $('applyForm').classList.toggle('hide', !e.target.checked);
   if (e.target.checked && !st.agreedAt) st.agreedAt = new Date();
@@ -636,10 +634,10 @@ function buildOutput(){
   L.push('');
   L.push('【かかっている時間（月）】');
   let any=false;
+  document.querySelectorAll('#times input').forEach(x=>{ if (x.value!=='' && Number(x.value) < 0) x.value = '0'; });
   document.querySelectorAll('#times input').forEach(x=>{ if(x.value){ any=true; const it=ISSUES.find(i=>i.id===x.dataset.id); L.push(`　[${it.id}] ${it.t}：${x.value}時間`);} });
   if (!any) L.push('　（未記入）');
   L.push(`　空いた時間で取り組みたいこと：${[...st.goals].join('、')||'（未選択）'}`);
-  L.push(`　使いたい専用機器：${[...st.devices].join('、')||'なし'}`);
   const times = []; document.querySelectorAll('#times input').forEach(x=>{ if(x.value) times.push(`${x.dataset.id}:${x.value}h`); });
   Object.assign(FIELDS, {
     '申込同意日時': fmtDate(st.agreedAt||new Date()), '法人個人': st.entity, '会社名': v('name'), 'フリガナ': v('kana'),
@@ -653,7 +651,7 @@ function buildOutput(){
     '要件確認': REQS.map((q,i)=>($('req'+i).checked?'☑':'☐')+q).join('\n'),
     '要件の未チェック数': REQS.filter((q,i)=>!$('req'+i).checked).length,
     'GビズID': st.gbiz||'', '過去の補助金': v('past')||'なし', '業務ソフト': v('soft'),
-    '作業時間（月）': times.join('、'), '取り組みたいこと': [...st.goals].join('、'), '専用機器': [...st.devices].join('、')
+    '作業時間（月）': times.join('、'), '取り組みたいこと': [...st.goals].join('、')
   });
   finish(L);
 }
