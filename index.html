@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>業務のお困りごと診断｜東京都 デジタル導入促進補助事業</title>
+<style>
+:root{
+  --navy:#1F3A5F; --ink:#1d2733; --sub:#5b6878; --line:#d9e0e8; --bg:#f5f7fa; --card:#fff;
+  --accent:#2f6fb2; --accent-soft:#e8f1fb; --ok:#2e7d4f; --ok-soft:#e6f4ec; --warn:#b3261e; --warn-soft:#fdecea;
+  --bo:#2f6fb2; --st:#c2711b; --at:#2e7d4f; --sa:#7b4bb3; --fi:#8a6d1f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Hiragino Sans','Yu Gothic','Meiryo',sans-serif;color:var(--ink);background:var(--bg);font-size:16px;line-height:1.7}
+header{background:var(--navy);color:#fff;padding:18px 20px 14px}
+header .pre{font-size:12px;opacity:.85;letter-spacing:.05em}
+header h1{margin:2px 0 0;font-size:20px;letter-spacing:.03em}
+.steps{display:flex;gap:4px;max-width:760px;margin:0 auto;padding:12px 16px 0}
+.steps div{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.steps div.on{background:var(--accent)}
+.steplabel{max-width:760px;margin:4px auto 0;padding:0 16px;font-size:12px;color:var(--sub)}
+main{max-width:760px;margin:0 auto;padding:12px 16px 120px}
+.screen{display:none}.screen.on{display:block}
+h2{font-size:20px;margin:16px 0 4px}
+.lead{color:var(--sub);margin:0 0 16px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font-size:15px;cursor:pointer;user-select:none}
+.chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.area{margin:22px 0 8px;display:flex;align-items:baseline;gap:8px}
+.area h3{margin:0;font-size:17px}
+.area .cnt{font-size:13px;color:var(--sub)}
+.issue{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:13px 14px;margin:8px 0;cursor:pointer;user-select:none}
+.issue .box{flex:0 0 24px;height:24px;border:2px solid #9aa7b6;border-radius:6px;margin-top:2px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+.issue.on{border-color:var(--accent);background:var(--accent-soft)}
+.issue.on .box{background:var(--accent);border-color:var(--accent)}
+.issue.on .box::after{content:"✓"}
+.issue .t{font-size:15.5px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:10}
+.bar .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar .meter{flex:1;font-size:13px;color:var(--sub)}
+.bar .meter b{font-size:18px;color:var(--ink)}
+.dots{display:flex;gap:4px;margin-top:4px}
+.dots span{width:16px;height:6px;border-radius:3px;background:var(--line)}
+.dots span.on{background:var(--accent)}
+.btn{border:0;border-radius:10px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
+.btn:disabled{background:#b8c3cf;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.block{width:100%;margin-top:10px}
+.note{font-size:13px;color:var(--sub)}
+.warnbox{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
+.okbox{background:var(--ok-soft);color:var(--ok);border-radius:10px;padding:12px 14px;font-size:14px;margin:10px 0}
+.sys{border-left:6px solid var(--c);position:relative}
+.sys .rank{font-size:12px;font-weight:700;color:var(--c);letter-spacing:.05em}
+.sys h3{margin:2px 0 6px;font-size:19px}
+.sys .why{font-size:14px;color:var(--sub);margin:4px 0 8px}
+.sys ul{margin:0;padding-left:20px;font-size:14.5px}
+.sys .sel{position:absolute;top:14px;right:14px}
+.toggle{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;background:#fff}
+.toggle.on{background:var(--c);border-color:var(--c);color:#fff;font-weight:700}
+.others .sys{opacity:.9}
+label.f{display:block;font-size:14px;font-weight:700;margin:14px 0 4px}
+label.f .req{color:var(--warn);font-size:12px;margin-left:4px}
+label.f .opt{color:var(--sub);font-size:12px;font-weight:400;margin-left:4px}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],select,textarea{width:100%;font-size:16px;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-family:inherit}
+textarea{min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.err{border-color:var(--warn)!important;background:#fff8f7}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk:last-child{border-bottom:0}
+.chk input{width:22px;height:22px;flex:0 0 22px;margin-top:2px}
+.hide{display:none!important}
+.agree{font-size:14px;background:#fafbfc;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:220px;overflow:auto}
+.agree ol{margin:0;padding-left:20px}
+pre.out{white-space:pre-wrap;background:#fafbfc;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;max-height:320px;overflow:auto}
+.timerow{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.timerow:last-child{border-bottom:0}
+.small{font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="pre">東京都 中小企業デジタル導入促進補助事業 対応</div>
+  <h1>業務のお困りごと診断</h1>
+</header>
+<div class="steps" id="steps"><div></div><div></div><div></div><div></div><div></div></div>
+<div class="steplabel" id="steplabel"></div>
+
+<main>
+<!-- 1. 業種 -->
+<section class="screen on" id="s1">
+  <h2>まず、御社のことを教えてください</h2>
+  <p class="lead">約3分で、御社に合うシステムをご提案します。</p>
+  <div class="card">
+    <label class="f" style="margin-top:0">業種</label>
+    <div class="chips" id="industry"></div>
+    <label class="f">従業員数<span class="opt">（役員・事業主ご本人を除く）</span></label>
+    <div class="chips" id="empsize"></div>
+  </div>
+  <button class="btn block" id="toIssues" disabled>お困りごとを選ぶ</button>
+</section>
+
+<!-- 2. お困りごと -->
+<section class="screen" id="s2">
+  <h2>当てはまるお困りごとを選んでください</h2>
+  <p class="lead">いくつでも選べます。<b>6つ以上</b>選ぶと、より合ったご提案ができます。</p>
+  <div id="issues"></div>
+  <div class="card" id="nudge" style="display:none"></div>
+</section>
+
+<!-- 3. おすすめ -->
+<section class="screen" id="s3">
+  <h2>御社へのおすすめ</h2>
+  <p class="lead" id="s3lead"></p>
+  <div id="recs"></div>
+  <details class="others" id="othersWrap">
+    <summary class="note" style="cursor:pointer;margin:8px 0">ほかのシステムも見る</summary>
+    <div id="others"></div>
+  </details>
+  <div class="card">
+    <div id="subsidyNote"></div>
+  </div>
+  <div id="selWarn"></div>
+  <button class="btn block" id="toApply">この内容で申し込む（基本情報の入力へ）</button>
+  <button class="btn ghost block" id="toConsult">まずは相談したい（診断結果を送る）</button>
+  <button class="btn ghost block" id="backIssues">お困りごとを選び直す</button>
+</section>
+
+<!-- 4. お申込み -->
+<section class="screen" id="s4">
+  <h2>お申込み・基本情報</h2>
+  <p class="lead">補助金の申請画面に入力する情報です。分からないところは空欄で大丈夫です（打合せでお聞きします）。</p>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;font-size:16px">お申込みにあたって</h3>
+    <div class="agree">
+      <ol>
+        <li>本お申込みは、選んだシステムの導入と、東京都中小企業振興公社「中小企業デジタル導入促進補助事業」の申請準備のサポートのお申込みです。</li>
+        <li>補助金の採択（交付決定）は公社の審査で決まります。採択をお約束するものではありません。</li>
+        <li>システムのご契約・お支払いは<b>交付決定の後</b>に行います（交付決定より前の契約は補助の対象外です）。ご利用開始は交付決定日の翌月1日（最短）を予定しています。</li>
+        <li>補助金の申請画面への入力・送信は、御社の役員または従業員の方に行っていただきます。当社は記載内容の整理と書類の準備をお手伝いします。</li>
+        <li>ご入力いただいた情報は、補助金の申請サポートとシステム導入のためにのみ使用します。</li>
+      </ol>
+    </div>
+    <label class="chk"><input type="checkbox" id="agree"><span>上記に同意して申し込みます</span></label>
+  </div>
+
+  <div id="applyForm" class="hide">
+  <div class="card">
+    <h3 style="margin:0;font-size:16px">会社の情報</h3>
+    <label class="f">法人／個人<span class="req">必須</span></label>
+    <div class="chips" id="entity"></div>
+    <label class="f">会社名・屋号<span class="req">必須</span></label>
+    <input type="text" id="name" placeholder="株式会社〇〇">
+    <label class="f">会社名・屋号（フリガナ）<span class="req">必須</span></label>
+    <input type="text" id="kana" placeholder="カブシキガイシャマルマル">
+    <div id="corpNoWrap">
+      <label class="f">法人番号（13桁）<span class="req">必須</span></label>
+      <input type="text" id="corpno" inputmode="numeric" placeholder="1234567890123">
+    </div>
+    <div class="row2">
+      <div><label class="f">本店の郵便番号<span class="req">必須</span></label><input type="text" id="zip" inputmode="numeric" placeholder="1600000"></div>
+      <div><label class="f">電話番号（代表）<span class="req">必須</span></label><input type="tel" id="tel" placeholder="03-1234-5678"></div>
+    </div>
+    <label class="f">本店の住所<span class="req">必須</span></label>
+    <input type="text" id="addr" placeholder="東京都新宿区〇〇1-2-3">
+    <label class="chk"><input type="checkbox" id="siteSame" checked><span>システムを使う場所は本店と同じ</span></label>
+    <div id="siteWrap" class="hide">
+      <label class="f">システムを使う事業所の住所</label>
+      <input type="text" id="site" placeholder="東京都〇〇区…">
+    </div>
+    <div class="row2">
+      <div><label class="f">設立（開業）年月</label><input type="text" id="founded" placeholder="2015年4月"></div>
+      <div><label class="f">資本金（万円）<span class="opt">個人は空欄</span></label><input type="number" id="capital" inputmode="numeric" placeholder="1000"></div>
+    </div>
+    <div class="row2">
+      <div><label class="f">従業員数（人）<span class="req">必須</span></label><input type="number" id="emp" inputmode="numeric" placeholder="8"></div>
+      <div><label class="f">ホームページ<span class="opt">任意</span></label><input type="text" id="hp" placeholder="https://"></div>
+    </div>
+    <label class="f">主な事業内容<span class="req">必須</span></label>
+    <input type="text" id="biz" placeholder="例）都内の店舗・オフィスの内装工事">
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0;font-size:16px">代表者・ご担当者</h3>
+    <div class="row2">
+      <div><label class="f">代表者 氏名<span class="req">必須</span></label><input type="text" id="rep" placeholder="山田 太郎"></div>
+      <div><label class="f">代表者 フリガナ<span class="req">必須</span></label><input type="text" id="repkana" placeholder="ヤマダ タロウ"></div>
+    </div>
+    <div class="row2">
+      <div><label class="f">代表者 役職</label><input type="text" id="reptitle" placeholder="代表取締役"></div>
+      <div><label class="f">代表者 生年月日</label><input type="date" id="repbirth"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="pSame"><span>ご担当者は代表者と同じ</span></label>
+    <div id="pWrap">
+      <div class="row2">
+        <div><label class="f">ご担当者 氏名<span class="req">必須</span></label><input type="text" id="pname"></div>
+        <div><label class="f">ご担当者 フリガナ</label><input type="text" id="pkana"></div>
+      </div>
+      <label class="f">部署・役職</label><input type="text" id="pdept">
+    </div>
+    <div class="row2">
+      <div><label class="f">ご担当者 電話<span class="req">必須</span></label><input type="tel" id="ptel"></div>
+      <div><label class="f">ご担当者 メール<span class="req">必須</span></label><input type="email" id="pmail"></div>
+    </div>
+    <p class="note small">補助金の審査の連絡はこのメールアドレスに届きます。ご担当者は御社の役員か従業員の方に限ります。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0;font-size:16px">申請できるかの確認</h3>
+    <p class="note">当てはまるものにチェックしてください。チェックが付かないものは打合せで確認します。</p>
+    <div id="reqs"></div>
+    <label class="f">GビズIDプライム</label>
+    <div class="chips" id="gbiz"></div>
+    <p class="note small">補助金の申請に必要です。未取得の場合は gbiz-id.go.jp からすぐに申請してください（取得まで約2週間）。パスワードは当社に伝えないでください。</p>
+    <label class="f">これまでに受けた補助金・助成金<span class="opt">あれば名称・年度</span></label>
+    <input type="text" id="past" placeholder="なし">
+    <label class="f">今使っている業務ソフト<span class="opt">任意</span></label>
+    <input type="text" id="soft" placeholder="例）会計：〇〇、給与：〇〇、Excel">
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0;font-size:16px">導入の効果を数字にするために<span class="opt" style="font-size:12px;font-weight:400;color:var(--sub)">（分かれば）</span></h3>
+    <p class="note">選んだお困りごとに、今どれくらいの時間がかかっていますか。全員分を合わせて、月あたりざっくりで大丈夫です。</p>
+    <div id="times"></div>
+    <label class="f">空いた時間で取り組みたいこと<span class="opt">いくつでも</span></label>
+    <div class="chips" id="goals"></div>
+    <label class="f">使いたい専用機器<span class="opt">あれば</span></label>
+    <div class="chips" id="devices"></div>
+    <p class="note small">パソコン・タブレット・スマホは補助の対象外です。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 6px;font-size:16px">ご用意いただく書類（あとでPDFでお送りください）</h3>
+    <ul class="note" style="margin:0;padding-left:20px">
+      <li>履歴事項全部証明書（法人・発行後3か月以内）／開業届の控え（個人）</li>
+      <li>直近1期分の確定申告書一式</li>
+      <li>事業税・住民税の納税証明書</li>
+      <li id="docSmall">（従業員が少ない場合）労働保険の年度更新の控え</li>
+    </ul>
+    <p class="note small" style="margin-top:6px">見積書・仕様書は当社で用意します。</p>
+  </div>
+
+  <div id="errbox"></div>
+  <button class="btn block" id="toDone">入力内容を確認する</button>
+  </div>
+</section>
+
+<!-- 5. 送信 -->
+<section class="screen" id="s5">
+  <h2 id="s5title">内容を送信してください</h2>
+  <div id="consultForm" class="card hide">
+    <p class="note" style="margin-top:0">ご連絡先を教えてください。担当者から、御社に合わせたご提案をご連絡します。</p>
+    <label class="f">会社名<span class="req">必須</span></label><input type="text" id="cName">
+    <label class="f">お名前<span class="req">必須</span></label><input type="text" id="cPerson">
+    <div class="row2">
+      <div><label class="f">電話番号<span class="req">必須</span></label><input type="tel" id="cTel"></div>
+      <div><label class="f">メール</label><input type="email" id="cMail"></div>
+    </div>
+  </div>
+  <div id="sendWrap">
+    <button class="btn block" id="sendBtn">送信する</button>
+    <p class="note small" id="sendMsg"></p>
+  </div>
+  <div id="copyWrap" class="hide">
+    <div class="warnbox" id="copyLead">下の手順で、内容を担当者へお送りください。</div>
+    <ol style="padding-left:20px;font-size:15px">
+      <li>「内容をコピー」を押す</li>
+      <li>LINE（またはメール）を開き、担当者あてに貼り付けて送信</li>
+    </ol>
+    <button class="btn block" id="copyBtn">内容をコピー</button>
+    <p class="note small" id="copyMsg"></p>
+  </div>
+  <details style="margin-top:10px"><summary class="note" style="cursor:pointer">送信する内容を確認する</summary>
+    <pre class="out" id="out"></pre>
+    <p class="note small">コピーできない場合は、枠の文字を長押しして全選択・コピーしてください。</p>
+  </details>
+  <button class="btn ghost block" id="backEdit">入力に戻る</button>
+</section>
+
+<!-- 6. 完了・書類アップロード -->
+<section class="screen" id="s6">
+  <h2 id="s6title">受け付けました</h2>
+  <div class="okbox" id="s6ok"></div>
+  <div id="uploadArea" class="hide">
+    <div class="card">
+      <h3 style="margin:0 0 4px;font-size:16px">書類のご提出</h3>
+      <p class="note" style="margin-top:0">PDFまたは写真を選ぶと、そのまま当社に届きます（1ファイル10MBまで）。今すぐでなくても、受付メールのリンクから後でお送りいただけます。</p>
+      <div id="docs"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="bar hide" id="bar">
+  <div class="in">
+    <div class="meter"><span id="meterText"></span><div class="dots" id="dots"></div></div>
+    <button class="btn" id="toRecs" disabled>おすすめを見る</button>
+  </div>
+</div>
+
+<script>
+// ===== 設定 =====
+// GoogleスプレッドシートのApps Script（ウェブアプリ）のURL。空なら「コピーしてLINEで送る」だけで動く
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyWzV02Gzm8sYzwTVvbw0_CbgX4RkZqLibGGXw6ww3a_YBIIGyfjgkU1q1vwi45Y0xSmg/exec';
+const GAS_TOKEN = 'tokyo-digital-2026';   // gas/コード.gs の TOKEN と同じ文字列
+const DOC_TYPES = ['履歴事項全部証明書・開業届','確定申告書','事業税の納税証明書','住民税の納税証明書','労働保険の年度更新の控え','その他'];
+
+// ===== データ =====
+const MIN_ISSUES = 6;       // 推奨する選択数
+const MIN_SYSTEMS = 3;      // 提案するシステム数（標準）
+const SYS = {
+  bo:{name:"バックオフィスDX", color:"var(--bo)", area:"事務・経理・書類",
+      desc:"請求書・契約書・経費・稟議を電子化し、書類の作成・保管・承認をまとめて効率化します。"},
+  st:{name:"店舗・在庫・販売DX", color:"var(--st)", area:"在庫・販売・レジ",
+      desc:"在庫・発注・棚卸・売上をリアルタイムで見える化し、レジや帳票ともつなげます。"},
+  at:{name:"勤怠DX", color:"var(--at)", area:"勤怠・シフト",
+      desc:"打刻・シフト・月次集計・有休・残業を一元管理し、給与ソフトへもつなげます。"},
+  sa:{name:"営業・商談DX", color:"var(--sa)", area:"営業・顧客管理",
+      desc:"顧客・商談・日報・見積をまとめて管理し、営業の情報を社内で共有します。"},
+  fi:{name:"現場・プロジェクトDX", color:"var(--fi)", area:"現場・設備",
+      desc:"工数・原価・現場日報・点検・設備台帳をスマホで記録し、現場と事務所をつなげます。"}
+};
+// 困りごと（main＝主に解決するシステム、func＝解決する機能、sub＝あわせて効くシステム）
+const ISSUES = [
+  {id:"bo1",main:"bo",t:"領収書・請求書を紙で保管していて、探すのに時間がかかる（電子帳簿保存法も不安）",func:"帳簿管理（証憑の電子保存・検索）",sub:[]},
+  {id:"bo2",main:"bo",t:"請求書・見積書をExcelや手書きで作り、印刷・郵送している",func:"請求書・見積書・納品書の自動作成・送信",sub:["sa"]},
+  {id:"bo3",main:"bo",t:"契約書を紙で押印・郵送していて、更新期限も管理できていない",func:"契約書の電子保存・承認・締結管理",sub:["sa"]},
+  {id:"bo4",main:"bo",t:"経費精算を紙の申請書と領収書で集計している",func:"経費精算（申請〜承認〜集計）",sub:[]},
+  {id:"bo5",main:"bo",t:"稟議や承認が紙・口頭で回り、決裁が止まりがち",func:"稟議・承認ワークフロー",sub:[]},
+  {id:"bo6",main:"bo",t:"社内のお知らせやマニュアルが散らばり、同じ質問に何度も答えている",func:"社内ポータル・ナレッジ共有",sub:["sa"]},
+  {id:"st1",main:"st",t:"在庫を手書き・Excelで管理していて、実際の数と合わない",func:"在庫・入出庫管理（QR/バーコード）",sub:[]},
+  {id:"st2",main:"st",t:"発注が担当者の勘頼みで、欠品や在庫の持ちすぎが起きる",func:"発注管理（発注点の自動アラート）",sub:[]},
+  {id:"st3",main:"st",t:"棚卸に、営業後や休日の長い時間がかかる",func:"棚卸（モバイル・差異の自動検出）",sub:[]},
+  {id:"st4",main:"st",t:"店舗別・商品別の売上がすぐに分からない",func:"売上ダッシュボード",sub:[]},
+  {id:"st5",main:"st",t:"領収書・納品書を手書きや個別のファイルで作っている",func:"帳票自動生成（請求・納品・領収書・電子レシート）",sub:["bo"]},
+  {id:"st6",main:"st",t:"レジの売上を手で転記・集計している",func:"スマートレジ連携",sub:["bo"]},
+  {id:"at1",main:"at",t:"タイムカードや紙の出勤簿で、打刻漏れや直行直帰が把握しにくい",func:"打刻（PC・スマホ・ICカード、位置情報）",sub:["fi"]},
+  {id:"at2",main:"at",t:"シフト作りや、希望の回収・調整に時間がかかる",func:"シフト作成・管理",sub:["st"]},
+  {id:"at3",main:"at",t:"月末の勤怠集計（残業・深夜・休日）を手作業でしている",func:"月次集計（残業・深夜・休日）",sub:[]},
+  {id:"at4",main:"at",t:"有休の残日数や年5日の取得を手作業で管理している",func:"休暇・有休管理",sub:[]},
+  {id:"at5",main:"at",t:"残業時間が月末まで分からず、36協定の上限に気づけない",func:"残業申請・36協定アラート",sub:[]},
+  {id:"at6",main:"at",t:"勤怠の集計結果を給与ソフトに手入力している",func:"給与計算ソフト連携",sub:["bo"]},
+  {id:"sa1",main:"sa",t:"顧客情報や商談の状況が担当者の頭の中にあり、共有できていない",func:"顧客・商談管理（パイプライン）",sub:[]},
+  {id:"sa2",main:"sa",t:"営業日報の提出・集計に手間がかかる",func:"営業日報（月次自動集計）",sub:["fi"]},
+  {id:"sa3",main:"sa",t:"見積書・提案書を毎回一から作っている",func:"見積・提案書の自動生成・送信",sub:["bo"]},
+  {id:"sa4",main:"sa",t:"契約書や帳票が担当者ごとにバラバラに保存されている",func:"契約・帳票の電子保存",sub:["bo"]},
+  {id:"sa5",main:"sa",t:"よくある質問への答え方や営業のコツが、特定の人にしか分からない",func:"FAQ・ナレッジ共有",sub:["bo"]},
+  {id:"sa6",main:"sa",t:"案内メールを1件ずつ送っていて、反応が分からない",func:"メール配信（開封・返信の集計）",sub:[]},
+  {id:"fi1",main:"fi",t:"案件ごとの工数・原価が後からしか分からず、赤字に気づくのが遅い",func:"工数・案件管理（予実ダッシュボード）",sub:["sa"]},
+  {id:"fi2",main:"fi",t:"現場日報が紙で、写真は各自のスマホに散らばっている",func:"現場日報（写真・位置情報付き）",sub:[]},
+  {id:"fi3",main:"fi",t:"点検表が紙で、記入漏れの確認や保管に手間がかかる",func:"点検チェックリストの電子化",sub:[]},
+  {id:"fi4",main:"fi",t:"設備・車両の点検時期をExcelや記憶で管理している",func:"設備・車両台帳と点検履歴",sub:[]},
+  {id:"fi5",main:"fi",t:"現場の異常・トラブルの報告が電話や口頭で、記録が残らない",func:"異常報告ワークフロー",sub:["bo"]},
+  {id:"fi6",main:"fi",t:"現場の記録を、事務所で作業報告書や請求書に書き直している",func:"帳票自動生成（作業報告書・納品書・請求書）",sub:["bo"]}
+];
+// 業種ごとの優先順（表示順・同点時・3つ目の補完に使う）。small＝小規模企業者の人数上限
+const INDUSTRIES = [
+  {k:"飲食・小売",order:["st","at","bo","sa","fi"],small:5},
+  {k:"卸売",order:["st","bo","sa","at","fi"],small:5},
+  {k:"建設・設備工事",order:["fi","at","bo","sa","st"],small:20},
+  {k:"製造",order:["fi","at","bo","st","sa"],small:20},
+  {k:"運輸・物流",order:["fi","at","bo","sa","st"],small:20},
+  {k:"美容・医療・福祉・教育などのサービス",order:["at","bo","sa","st","fi"],small:5},
+  {k:"IT・士業・コンサル",order:["bo","sa","at","fi","st"],small:20},
+  {k:"その他",order:["bo","at","sa","st","fi"],small:20}
+];
+const EMPS = ["1〜5人","6〜20人","21〜50人","51人以上"];
+const REQS = [
+  "東京都内に本店または支店があり、そこで実際に営業している",
+  "大企業の子会社ではない（大企業に株式の半分以上を持たれていない）",
+  "税金（事業税・都民税など）の滞納がない",
+  "このシステムの費用で、他の補助金・助成金を受けていない・申請していない",
+  "過去にこの事業（公社のデジタルツール導入の助成金）で採択されたことがない",
+  "直近の決算書（確定申告書）と納税証明書を用意できる"
+];
+const GOALS = ["営業・新規開拓に力を入れる","新しい商品・サービスをつくる","残業を減らす・休みを取りやすくする","賃上げ・採用に回す","ミスを減らし品質を上げる"];
+const DEVICES = ["スマートレジ","QR・バーコード読取機","ICカード打刻機","車両のOBD診断機"];
+
+// ===== 状態 =====
+const st = {industry:null, emp:null, picked:new Set(), chosen:new Set(), entity:"法人", gbiz:null, goals:new Set(), devices:new Set(), agreedAt:null, mode:null};
+const $ = id => document.getElementById(id);
+const LABELS = ["業種","お困りごと","おすすめ","お申込み","送信","完了"];
+
+function show(n){
+  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('on',i===n-1));
+  document.querySelectorAll('#steps div').forEach((d,i)=>d.classList.toggle('on',i<Math.min(n,5)));
+  $('steplabel').textContent = n<=5 ? `STEP ${n}／5　${LABELS[n-1]}` : '完了';
+  $('bar').classList.toggle('hide', n!==2);
+  window.scrollTo(0,0);
+}
+
+function chips(el, items, onPick, multi, isOn){
+  el.innerHTML = "";
+  items.forEach(v=>{
+    const c = document.createElement('div');
+    c.className = 'chip' + (isOn(v)?' on':''); c.textContent = v;
+    c.onclick = ()=>{ onPick(v); chips(el, items, onPick, multi, isOn); };
+    el.appendChild(c);
+  });
+}
+
+// ===== STEP1 =====
+function renderS1(){
+  chips($('industry'), INDUSTRIES.map(i=>i.k), v=>{st.industry=v; checkS1();}, false, v=>st.industry===v);
+  chips($('empsize'), EMPS, v=>{st.emp=v; checkS1();}, false, v=>st.emp===v);
+}
+function checkS1(){ $('toIssues').disabled = !(st.industry && st.emp); }
+$('toIssues').onclick = ()=>{ renderIssues(); show(2); };
+
+const ind = ()=> INDUSTRIES.find(i=>i.k===st.industry) || INDUSTRIES[INDUSTRIES.length-1];
+
+// ===== STEP2 =====
+function renderIssues(){
+  const wrap = $('issues'); wrap.innerHTML = "";
+  ind().order.forEach(sk=>{
+    const head = document.createElement('div'); head.className='area';
+    const n = ISSUES.filter(i=>i.main===sk && st.picked.has(i.id)).length;
+    head.innerHTML = `<h3>${SYS[sk].area}</h3><span class="cnt">${n?n+'つ選択中':''}</span>`;
+    wrap.appendChild(head);
+    ISSUES.filter(i=>i.main===sk).forEach(it=>{
+      const d = document.createElement('div');
+      d.className = 'issue' + (st.picked.has(it.id)?' on':'');
+      d.innerHTML = `<div class="box"></div><div class="t">${it.t}</div>`;
+      d.onclick = ()=>{ st.picked.has(it.id)?st.picked.delete(it.id):st.picked.add(it.id); st.chosen.clear(); renderIssues(); };
+      wrap.appendChild(d);
+    });
+  });
+  updateBar();
+}
+function coveredSystems(){ return new Set([...st.picked].map(id=>ISSUES.find(i=>i.id===id).main)); }
+function updateBar(){
+  const n = st.picked.size, cov = coveredSystems().size;
+  $('meterText').innerHTML = `<b>${n}</b>個・<b>${cov}</b>分野を選択中<div class="small">目安：${MIN_ISSUES}個以上・${MIN_SYSTEMS}分野以上</div>`;
+  $('dots').innerHTML = Array.from({length:MIN_ISSUES},(_,i)=>`<span class="${i<n?'on':''}"></span>`).join('');
+  $('toRecs').disabled = n < 1;
+  $('nudge').style.display = 'none';
+}
+$('toRecs').onclick = ()=>{
+  const n = st.picked.size, cov = coveredSystems();
+  if (n >= MIN_ISSUES && cov.size >= MIN_SYSTEMS) return goRecs();
+  // 不足：まだ選ばれていない分野の困りごとを提示
+  const lacking = ind().order.filter(k=>!cov.has(k));
+  const box = $('nudge'); box.style.display='block';
+  let html = `<div class="warnbox" style="margin-top:0">`;
+  if (n < MIN_ISSUES) html += `あと <b>${MIN_ISSUES-n}個</b> 選ぶと、より合ったご提案ができます。`;
+  if (cov.size < MIN_SYSTEMS) html += `${n<MIN_ISSUES?'<br>':''}ほかの分野にも、こんなお困りごとはありませんか？`;
+  html += `</div>`;
+  box.innerHTML = html;
+  const list = document.createElement('div');
+  lacking.slice(0,3).forEach(k=>{
+    ISSUES.filter(i=>i.main===k && !st.picked.has(i.id)).slice(0,2).forEach(it=>{
+      const d = document.createElement('div'); d.className='issue';
+      d.innerHTML = `<div class="box"></div><div class="t">${it.t}<div class="note small">${SYS[k].area}</div></div>`;
+      d.onclick = ()=>{ st.picked.add(it.id); st.chosen.clear(); renderIssues(); $('toRecs').click(); };
+      list.appendChild(d);
+    });
+  });
+  box.appendChild(list);
+  const go = document.createElement('button'); go.className='btn ghost block'; go.textContent='このままおすすめを見る';
+  go.onclick = goRecs; box.appendChild(go);
+  box.scrollIntoView({behavior:'smooth', block:'start'});
+};
+
+// ===== STEP3 =====
+function scores(){
+  const sc = {bo:0,st:0,at:0,sa:0,fi:0};
+  st.picked.forEach(id=>{ const it = ISSUES.find(i=>i.id===id); sc[it.main]+=3; it.sub.forEach(s=>sc[s]+=1); });
+  return sc;
+}
+function ranking(){
+  const sc = scores(), ord = ind().order;
+  return Object.keys(SYS).sort((a,b)=> (sc[b]-sc[a]) || (ord.indexOf(a)-ord.indexOf(b)));
+}
+function goRecs(){
+  const rank = ranking();
+  if (st.chosen.size===0) rank.slice(0,MIN_SYSTEMS).forEach(k=>st.chosen.add(k));
+  renderRecs(); show(3);
+}
+function sysCard(k, i, top){
+  const sc = scores(), mine = ISSUES.filter(it=>st.picked.has(it.id) && it.main===k);
+  const assist = ISSUES.filter(it=>st.picked.has(it.id) && it.sub.includes(k));
+  const s = SYS[k];
+  let why;
+  if (mine.length) why = `選んだお困りごとのうち <b>${mine.length}つ</b> を解決します。`;
+  else if (assist.length) why = `ほかのシステムと組み合わせると、選んだお困りごとの <b>${assist.length}つ</b> をさらに楽にします。`;
+  else why = `${st.industry}で、あわせて導入されることが多いシステムです。`;
+  const lis = mine.map(it=>`<li>${it.func}<div class="note small">「${it.t}」</div></li>`).join('')
+           || assist.map(it=>`<li>${it.t}</li>`).join('');
+  const on = st.chosen.has(k);
+  return `<div class="card sys" style="--c:${s.color}">
+    <div class="rank">${top?'おすすめ '+(i+1):'その他のシステム'}</div>
+    <h3>${s.name}</h3>
+    <div class="note">${s.desc}</div>
+    <div class="why">${why}</div>
+    ${lis?`<ul>${lis}</ul>`:''}
+    <div class="sel"><span class="toggle ${on?'on':''}" data-k="${k}">${on?'✓ 導入する':'＋ 追加する'}</span></div>
+  </div>`;
+}
+function renderRecs(){
+  const rank = ranking();
+  $('s3lead').innerHTML = `選んだ <b>${st.picked.size}個</b> のお困りごとから、${MIN_SYSTEMS}つのシステムの組み合わせをご提案します。`;
+  $('recs').innerHTML = rank.slice(0,MIN_SYSTEMS).map((k,i)=>sysCard(k,i,true)).join('');
+  $('others').innerHTML = rank.slice(MIN_SYSTEMS).map((k,i)=>sysCard(k,i,false)).join('');
+  document.querySelectorAll('.toggle').forEach(t=>t.onclick=()=>{
+    const k = t.dataset.k; st.chosen.has(k)?st.chosen.delete(k):st.chosen.add(k); renderRecs();
+  });
+  const sz = st.emp, smallMax = ind().small;
+  const maybeSmall = (sz==="1〜5人") || (sz==="6〜20人" && smallMax===20);
+  $('subsidyNote').innerHTML = `<b>補助金について</b><div class="note">東京都中小企業振興公社の補助金で、導入費用の <b>${maybeSmall?'3分の2':'2分の1'}</b>（上限150万円）が補助される見込みです${maybeSmall?'（従業員数が小規模企業者の範囲に入る場合）':''}。採択は公社の審査で決まります。</div>`;
+  const c = st.chosen.size;
+  $('selWarn').innerHTML = c < MIN_SYSTEMS
+    ? `<div class="warnbox">${MIN_SYSTEMS}つのシステムを組み合わせるのが標準のご提案です。あと${MIN_SYSTEMS-c}つ選んでください（「ほかのシステムも見る」から追加できます）。</div>` : '';
+  $('toApply').disabled = c < MIN_SYSTEMS;
+}
+$('backIssues').onclick = ()=>{ renderIssues(); show(2); };
+$('toApply').onclick = ()=>{ st.mode='apply'; renderApply(); show(4); };
+$('toConsult').onclick = ()=>{ st.mode='consult'; buildOutput(); show(5); };
+
+// ===== STEP4 =====
+function renderApply(){
+  chips($('entity'), ["法人","個人事業主"], v=>{st.entity=v; $('corpNoWrap').classList.toggle('hide', v!=="法人");}, false, v=>st.entity===v);
+  chips($('gbiz'), ["取得済み","申請中","未取得"], v=>{st.gbiz=v;}, false, v=>st.gbiz===v);
+  chips($('goals'), GOALS, v=>{st.goals.has(v)?st.goals.delete(v):st.goals.add(v);}, true, v=>st.goals.has(v));
+  chips($('devices'), DEVICES, v=>{st.devices.has(v)?st.devices.delete(v):st.devices.add(v);}, true, v=>st.devices.has(v));
+  if (!$('reqs').children.length) $('reqs').innerHTML = REQS.map((q,i)=>`<label class="chk"><input type="checkbox" id="req${i}"><span>${q}</span></label>`).join('');
+  const prev = {}; document.querySelectorAll('#times input').forEach(x=>prev[x.dataset.id]=x.value);
+  $('times').innerHTML = [...st.picked].map(id=>{ const it = ISSUES.find(i=>i.id===id);
+    return `<div class="timerow"><div>${it.t}</div><input type="number" inputmode="numeric" placeholder="時間/月" data-id="${id}" value="${prev[id]||''}"></div>`; }).join('');
+}
+$('agree').onchange = e=>{
+  $('applyForm').classList.toggle('hide', !e.target.checked);
+  if (e.target.checked && !st.agreedAt) st.agreedAt = new Date();
+};
+$('siteSame').onchange = e=> $('siteWrap').classList.toggle('hide', e.target.checked);
+$('pSame').onchange = e=> $('pWrap').classList.toggle('hide', e.target.checked);
+
+const REQUIRED = [["name","会社名・屋号"],["kana","フリガナ"],["zip","郵便番号"],["addr","本店の住所"],["tel","電話番号"],["emp","従業員数"],["biz","主な事業内容"],["rep","代表者 氏名"],["repkana","代表者 フリガナ"],["ptel","ご担当者 電話"],["pmail","ご担当者 メール"]];
+$('toDone').onclick = ()=>{
+  const miss = [];
+  document.querySelectorAll('.err').forEach(x=>x.classList.remove('err'));
+  const req = REQUIRED.slice();
+  if (st.entity==="法人") req.push(["corpno","法人番号"]);
+  if (!$('pSame').checked) req.push(["pname","ご担当者 氏名"]);
+  req.forEach(([id,l])=>{ if(!$(id).value.trim()){ $(id).classList.add('err'); miss.push(l);} });
+  const cn = $('corpno').value.replace(/\D/g,'');
+  if (st.entity==="法人" && cn && cn.length!==13){ $('corpno').classList.add('err'); miss.push('法人番号（13桁）'); }
+  if ($('pmail').value && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('pmail').value)){ $('pmail').classList.add('err'); miss.push('メールアドレスの形式'); }
+  if (miss.length){
+    $('errbox').innerHTML = `<div class="warnbox">次の項目を入力してください：${miss.join('、')}</div>`;
+    const first = document.querySelector('.err'); if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  $('errbox').innerHTML = '';
+  buildOutput(); show(5);
+};
+
+// ===== STEP5：出力 =====
+const v = id => ($(id).value||'').trim();
+function fmtDate(d){ const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+let FIELDS = {};
+function buildOutput(){
+  const rank = ranking(), sc = scores();
+  const chosen = rank.filter(k=>st.chosen.has(k));
+  const L = [];
+  const picked = ISSUES.filter(i=>st.picked.has(i.id));
+  FIELDS = {
+    '業種': st.industry, '従業員規模': st.emp,
+    '困りごとID': picked.map(i=>i.id).join(','),
+    '困りごと': picked.map(i=>`[${i.id}] ${i.t}`).join('\n'),
+    '導入システム': chosen.map(k=>SYS[k].name).join('、'),
+    'スコア': chosen.map(k=>`${SYS[k].name}:${sc[k]}`).join('、')
+  };
+  L.push(st.mode==='apply' ? '【デジタル導入促進補助事業 お申込み】' : '【業務のお困りごと診断 結果（ご相談）】');
+  L.push(`送信日時：${fmtDate(new Date())}`);
+  L.push('');
+  L.push('【御社の概要】');
+  L.push(`　業種：${st.industry}`);
+  L.push(`　従業員規模：${st.emp}`);
+  L.push('');
+  L.push(`【選んだお困りごと】（${st.picked.size}個）`);
+  ind().order.forEach(k=>{
+    const its = ISSUES.filter(i=>i.main===k && st.picked.has(i.id));
+    if (!its.length) return;
+    L.push(`　■${SYS[k].area}（→${SYS[k].name}）`);
+    its.forEach(i=>L.push(`　・[${i.id}] ${i.t}`));
+  });
+  L.push('');
+  L.push('【導入するシステム】');
+  chosen.forEach(k=>L.push(`　・${SYS[k].name}（スコア${sc[k]}）`));
+  if (st.mode!=='apply'){
+    L.push(''); L.push('※まずはご相談希望');
+    L.push(`　会社名：${v('cName')}`); L.push(`　お名前：${v('cPerson')}`); L.push(`　電話：${v('cTel')}`); L.push(`　メール：${v('cMail')}`);
+    Object.assign(FIELDS, {'会社名':v('cName'),'担当者氏名':v('cPerson'),'担当者電話':v('cTel'),'担当者メール':v('cMail')});
+    return finish(L);
+  }
+
+  L.push('');
+  L.push('【申込同意】');
+  L.push(`　上記の申込条件に同意して申し込みます。同意日時：${fmtDate(st.agreedAt||new Date())}`);
+  L.push('');
+  L.push('【会社の情報】');
+  L.push(`　法人／個人：${st.entity}`);
+  L.push(`　会社名・屋号：${v('name')}`);
+  L.push(`　フリガナ：${v('kana')}`);
+  if (st.entity==="法人") L.push(`　法人番号：${v('corpno').replace(/\D/g,'')}`);
+  L.push(`　郵便番号：${v('zip').replace(/\D/g,'')}`);
+  L.push(`　本店住所：${v('addr')}`);
+  L.push(`　事業実施場所：${$('siteSame').checked ? '本店と同じ' : v('site')}`);
+  L.push(`　電話番号：${v('tel')}`);
+  L.push(`　設立（開業）：${v('founded')}`);
+  L.push(`　資本金（万円）：${v('capital')}`);
+  L.push(`　従業員数：${v('emp')}人`);
+  const small = Number(v('emp')) <= ind().small;
+  L.push(`　助成率の見込み：${small ? '2/3（小規模企業者）' : '1/2'}　※業種区分により要確認`);
+  L.push(`　事業内容：${v('biz')}`);
+  L.push(`　ホームページ：${v('hp')}`);
+  L.push('');
+  L.push('【代表者】');
+  L.push(`　氏名：${v('rep')}${v('repkana')?'（'+v('repkana')+'）':''}`);
+  L.push(`　役職：${v('reptitle')}`);
+  L.push(`　生年月日：${v('repbirth').replace(/-/g,'/')}`);
+  L.push('');
+  L.push('【ご担当者】');
+  if ($('pSame').checked) L.push('　氏名：代表者と同じ');
+  else { L.push(`　氏名：${v('pname')}${v('pkana')?'（'+v('pkana')+'）':''}`); L.push(`　部署・役職：${v('pdept')}`); }
+  L.push(`　電話：${v('ptel')}`);
+  L.push(`　メール：${v('pmail')}`);
+  L.push('');
+  L.push('【申請できるかの確認】');
+  REQS.forEach((q,i)=>L.push(`　${$('req'+i).checked?'☑':'☐（要確認）'} ${q}`));
+  L.push(`　GビズIDプライム：${st.gbiz||'未回答'}`);
+  L.push(`　過去の補助金・助成金：${v('past')||'なし'}`);
+  L.push(`　今使っている業務ソフト：${v('soft')}`);
+  L.push('');
+  L.push('【かかっている時間（月）】');
+  let any=false;
+  document.querySelectorAll('#times input').forEach(x=>{ if(x.value){ any=true; const it=ISSUES.find(i=>i.id===x.dataset.id); L.push(`　[${it.id}] ${it.t}：${x.value}時間`);} });
+  if (!any) L.push('　（未記入）');
+  L.push(`　空いた時間で取り組みたいこと：${[...st.goals].join('、')||'（未選択）'}`);
+  L.push(`　使いたい専用機器：${[...st.devices].join('、')||'なし'}`);
+  const times = []; document.querySelectorAll('#times input').forEach(x=>{ if(x.value) times.push(`${x.dataset.id}:${x.value}h`); });
+  Object.assign(FIELDS, {
+    '申込同意日時': fmtDate(st.agreedAt||new Date()), '法人個人': st.entity, '会社名': v('name'), 'フリガナ': v('kana'),
+    '法人番号': st.entity==='法人' ? v('corpno').replace(/\D/g,'') : '', '郵便番号': v('zip').replace(/\D/g,''),
+    '本店住所': v('addr'), '事業実施場所': $('siteSame').checked ? '本店と同じ' : v('site'), '電話番号': v('tel'),
+    '設立': v('founded'), '資本金（万円）': v('capital'), '従業員数': v('emp'), '助成率の見込み': small ? '2/3' : '1/2',
+    '事業内容': v('biz'), 'ホームページ': v('hp'),
+    '代表者氏名': v('rep'), '代表者フリガナ': v('repkana'), '代表者役職': v('reptitle'), '代表者生年月日': v('repbirth').replace(/-/g,'/'),
+    '担当者氏名': $('pSame').checked ? v('rep') : v('pname'), '担当者フリガナ': $('pSame').checked ? v('repkana') : v('pkana'),
+    '担当者部署': v('pdept'), '担当者電話': v('ptel'), '担当者メール': v('pmail'),
+    '要件確認': REQS.map((q,i)=>($('req'+i).checked?'☑':'☐')+q).join('\n'),
+    '要件の未チェック数': REQS.filter((q,i)=>!$('req'+i).checked).length,
+    'GビズID': st.gbiz||'', '過去の補助金': v('past')||'なし', '業務ソフト': v('soft'),
+    '作業時間（月）': times.join('、'), '取り組みたいこと': [...st.goals].join('、'), '専用機器': [...st.devices].join('、')
+  });
+  finish(L);
+}
+function finish(L){
+  $('out').textContent = L.join('\n');
+  const apply = st.mode==='apply';
+  $('s5title').textContent = apply ? '内容を送信してください' : '診断結果を送信してください';
+  $('consultForm').classList.toggle('hide', apply);
+  $('backEdit').textContent = apply ? '入力に戻る' : 'おすすめに戻る';
+  $('sendWrap').classList.toggle('hide', !GAS_URL);
+  $('copyWrap').classList.toggle('hide', !!GAS_URL);
+  $('copyLead').innerHTML = apply ? 'お申込みありがとうございます。<b>まだ送信は完了していません。</b>下の手順で担当者へお送りください。' : '下の手順で、診断結果を担当者へお送りください。';
+  $('copyMsg').textContent = ''; $('sendMsg').textContent = ''; $('sendBtn').disabled = false;
+}
+$('copyBtn').onclick = async ()=>{
+  if (st.mode!=='apply') buildOutput();
+  try { await navigator.clipboard.writeText($('out').textContent); $('copyMsg').textContent = 'コピーしました。LINEに貼り付けて送信してください。'; }
+  catch(e){ $('copyMsg').textContent = 'コピーできませんでした。「送信する内容を確認する」を開き、枠の文字を長押しして全選択・コピーしてください。'; }
+};
+$('backEdit').onclick = ()=> show(st.mode==='apply'?4:3);
+
+async function post(payload){
+  const res = await fetch(GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({token:GAS_TOKEN}, payload))});
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.msg||'送信できませんでした');
+  return j;
+}
+$('sendBtn').onclick = async ()=>{
+  if (st.mode!=='apply'){
+    const miss = [['cName','会社名'],['cPerson','お名前'],['cTel','電話番号']].filter(([id])=>!v(id));
+    document.querySelectorAll('#consultForm .err').forEach(x=>x.classList.remove('err'));
+    if (miss.length){ miss.forEach(([id])=>$(id).classList.add('err')); $('sendMsg').textContent = '次の項目を入力してください：'+miss.map(m=>m[1]).join('、'); return; }
+    buildOutput();
+  }
+  $('sendBtn').disabled = true; $('sendMsg').textContent = '送信しています…';
+  try {
+    const j = await post({action:'submit', mode:st.mode, fields:FIELDS, text:$('out').textContent, formUrl:location.origin+location.pathname});
+    openDone(j.id, j.key, st.mode==='apply');
+  } catch(e){
+    $('sendMsg').textContent = '送信できませんでした。お手数ですが、下の方法でお送りください。';
+    $('copyWrap').classList.remove('hide'); $('sendBtn').disabled = false;
+  }
+};
+
+// ===== 完了・書類アップロード =====
+function openDone(id, key, apply){
+  $('s6title').textContent = apply ? 'お申込みを受け付けました' : '送信しました';
+  $('s6ok').innerHTML = apply
+    ? `受付番号：<b>${id}</b><br>ご担当者のメールアドレスに受付メールをお送りしました。書類はこの画面か、メールのリンクからお送りください。`
+    : `受付番号：<b>${id}</b><br>担当者から、御社に合わせたご提案をご連絡します。`;
+  $('uploadArea').classList.toggle('hide', !(apply && key));
+  if (apply && key) renderDocs(id, key);
+  show(6);
+}
+function renderDocs(id, key){
+  $('docs').innerHTML = DOC_TYPES.map((d,i)=>`<div class="timerow" style="grid-template-columns:1fr auto">
+    <div><b>${d}</b><div class="note small" id="dmsg${i}"></div></div>
+    <label class="btn ghost" style="padding:10px 14px;font-size:14px">選ぶ<input type="file" accept="application/pdf,image/*" multiple data-i="${i}" style="display:none"></label></div>`).join('');
+  document.querySelectorAll('#docs input[type=file]').forEach(inp=>inp.onchange = async ()=>{
+    const i = inp.dataset.i, msg = $('dmsg'+i), files = [...inp.files];
+    for (const file of files){
+      if (file.size > 10*1024*1024){ msg.textContent = `${file.name}：10MBを超えています`; continue; }
+      msg.textContent = `${file.name} を送信中…`;
+      try {
+        const b64 = await new Promise((ok,ng)=>{ const r = new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]); r.onerror=ng; r.readAsDataURL(file); });
+        await post({action:'upload', id, key, docType:DOC_TYPES[i], fileName:file.name, mime:file.type, base64:b64});
+        msg.innerHTML = `<span style="color:var(--ok)">✓ ${file.name} を受け取りました</span>`;
+      } catch(e){ msg.innerHTML = `<span style="color:var(--warn)">${file.name}：送信できませんでした（${e.message}）</span>`; }
+    }
+    inp.value = '';
+  });
+}
+
+// 受付メールのリンク（?id=…&key=…）から開いたときは、書類アップロード画面だけを出す
+(function(){
+  const q = new URLSearchParams(location.search);
+  if (q.get('id') && q.get('key') && GAS_URL){
+    $('s6title').textContent = '書類のご提出';
+    $('s6ok').innerHTML = `受付番号：<b>${q.get('id')}</b>`;
+    $('uploadArea').classList.remove('hide'); renderDocs(q.get('id'), q.get('key'));
+    show(6); window.__uploadOnly = true;
+  }
+})();
+
+renderS1(); if(!window.__uploadOnly) show(1);
+</script>
+</body>
+</html>
